@@ -45,7 +45,7 @@
         </div>
         <div class="col-md-4">
             <div class="card stat-card p-3 shadow-sm mb-3" style="border-left-color: #ffc107;">
-                <div class="text-muted small fw-bold">IMPORT DATA TERAKHIR</div>
+                <div class="text-muted small fw-bold">UPDATE TERAKHIR</div>
                 <div class="h3 fw-bold" style="font-size: 1.2rem;" id="lastUpdate">-</div>
                 <div class="text-warning small"><i class="bi bi-clock-history"></i> Status Sinkronisasi</div>
             </div>
@@ -55,7 +55,7 @@
     <div class="table-container p-4 mb-4">
         <h5 class="fw-bold mb-3"><i class="bi bi-file-earmark-arrow-up"></i> Update Database dari CSV</h5>
         <div class="row g-2">
-            <div class="col-md-9">
+            <div class="col-md-9 text-start">
                 <input type="file" id="csvFileInput" class="form-control" accept=".csv">
             </div>
             <div class="col-md-3 d-grid">
@@ -69,19 +69,19 @@
             <h5 class="fw-bold mb-0">Daftar Inventori Real-time</h5>
             <input type="text" id="searchBox" class="form-control w-25" placeholder="Cari barang..." onkeyup="searchBarang()">
         </div>
-        <div class="table-responsive">
+        <div class="table-responsive text-start">
             <table class="table table-hover border-top">
                 <thead class="table-light">
                     <tr>
-                        <th>KODE</th>
-                        <th>NAMA BARANG</th>
-                        <th>JUMLAH</th>
-                        <th>SATUAN</th>
+                        <th style="width: 5%;">NO</th>
+                        <th style="width: 50%;">NAMA BARANG</th>
+                        <th style="width: 15%;">JUMLAH</th>
+                        <th style="width: 15%;">SATUAN</th>
                         <th class="text-end">AKSI</th>
                     </tr>
                 </thead>
                 <tbody id="inventoryTable">
-                    </tbody>
+                </tbody>
             </table>
         </div>
     </div>
@@ -104,7 +104,7 @@
         data.forEach((item, index) => {
             tableBody.innerHTML += `
                 <tr>
-                    <td class="text-muted small">#${item.kode}</td>
+                    <td>${item.no}</td>
                     <td class="fw-bold text-dark">${item.nama}</td>
                     <td><span class="badge ${item.stok < 10 ? 'bg-danger' : 'bg-primary'}">${item.stok}</span></td>
                     <td class="text-secondary">${item.satuan}</td>
@@ -131,7 +131,7 @@
                 const cols = rows[i].split(',');
                 if (cols.length >= 4) {
                     atkList.push({
-                        kode: cols[0].trim(),
+                        no: cols[0].trim(),
                         nama: cols[1].trim(),
                         stok: cols[2].trim(),
                         satuan: cols[3].trim()
@@ -140,7 +140,7 @@
             }
             document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString('id-ID');
             displayTable();
-            alert("Dashboard Berhasil Diperbarui!");
+            alert("Nomor Urut dan Data Berhasil Diimpor!");
         };
         reader.readAsText(file);
     }
