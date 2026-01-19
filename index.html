@@ -168,41 +168,46 @@
     }
 
     function importData() {
-        const fileInput = document.getElementById('csvFileInput');
-        const file = fileInput.files[0];
-        if (!file) return alert("Ups! Pilih file CSV dulu.");
+    const fileInput = document.getElementById('csvFileInput');
+    const file = fileInput.files[0];
+    if (!file) return alert("Pilih file CSV dulu!");
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const rows = e.target.result.split('\n');
-            let added = 0;
-            let skipped = 0;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const text = e.target.result;
+        const rows = text.split(/\r?\n/); // Membagi baris dengan lebih akurat
+        let added = 0;
+        let skipped = 0;
 
-            for (let i = 1; i < rows.length; i++) {
-                const cols = rows[i].split(',');
-                if (cols.length >= 2 && cols[1].trim() !== "") {
-                    const name = cols[1].trim().toUpperCase();
-                    // CEK DUPLIKAT
-                    const exists = atkList.some(item => item.nama.toUpperCase() === name);
+        for (let i = 1; i < rows.length; i++) {
+            if (!rows[i].trim()) continue; // Lewati baris kosong
 
-                    if (!exists) {
-                        atkList.push({
-                            nama: name,
-                            stok: cols[2] ? cols[2].trim() : "0",
-                            satuan: cols[3] ? cols[3].trim() : "-"
-                        });
-                        added++;
-                    } else {
-                        skipped++;
-                    }
+            // Coba deteksi pemisah: koma (,) atau titik koma (;)
+            let cols = rows[i].split(',');
+            if (cols.length < 2) cols = rows[i].split(';');
+
+            if (cols.length >= 2) {
+                const name = cols[1].replace(/"/g, "").trim().toUpperCase(); // Bersihkan tanda kutip jika ada
+                const exists = atkList.some(item => item.nama.toUpperCase() === name);
+
+                if (!exists && name !== "") {
+                    atkList.push({
+                        nama: name,
+                        stok: cols[2] ? cols[2].replace(/"/g, "").trim() : "0",
+                        satuan: cols[3] ? cols[3].replace(/"/g, "").trim() : "-"
+                    });
+                    added++;
+                } else {
+                    skipped++;
                 }
             }
-            document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString('id-ID');
-            displayTable();
-            alert(Berhasil! ${added} data baru masuk, ${skipped} duplikat dilewati.);
-        };
-        reader.readAsText(file);
-    }
+        }
+        document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString('id-ID');
+        displayTable();
+        alert(Berhasil! ${added} item baru masuk. ${skipped} duplikat/kosong dilewati.);
+    };
+    reader.readAsText(file);
+}
 
     function clearAllData() {
         if(confirm("Hapus semua data di dashboard ini?")) {
