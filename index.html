@@ -3,57 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventori ATK Pro</title>
+    <title>Inventori ATK - Import CSV</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; }
-        .card { border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .btn-primary { background-color: #4e73df; border: none; }
-        .table thead { background-color: #4e73df; color: white; }
+        body { background-color: #f4f7f6; }
+        .card { border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .header-bg { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; border-radius: 10px 10px 0 0; }
     </style>
 </head>
 <body>
 
 <div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card p-4 mb-4">
-                <h2 class="text-center mb-4 text-primary">📦 Manajemen Inventori ATK</h2>
-                
-                <div class="row g-2 mb-4">
-                    <input type="hidden" id="atkId">
-                    <div class="col-md-5">
-                        <input type="text" id="atkName" class="form-control" placeholder="Nama Barang (misal: Kertas A4)">
-                    </div>
-                    <div class="col-md-3">
-                        <input type="number" id="atkStock" class="form-control" placeholder="Stok">
-                    </div>
-                    <div class="col-md-4 d-grid">
-                        <button onclick="saveData()" id="btnSave" class="btn btn-primary">Tambah Barang</button>
-                    </div>
+    <div class="card">
+        <div class="header-bg p-4 text-center">
+            <h2 class="mb-0">📦 Sistem Inventori ATK</h2>
+            <small>Fitur: CRUD + Import CSV</small>
+        </div>
+        <div class="card-body p-4">
+            
+            <div class="mb-4 p-3 bg-light border rounded">
+                <label class="form-label fw-bold">Import Data dari CSV (Excel):</label>
+                <div class="input-group">
+                    <input type="file" id="csvFile" class="form-control" accept=".csv">
+                    <button onclick="importCSV()" class="btn btn-success">Unggah & Import</button>
                 </div>
+                <small class="text-muted mt-1 d-block text-danger">*Pastikan format CSV sesuai (Nama, Stok)</small>
+            </div>
 
-                <hr>
+            <hr>
 
-                <div class="mb-3">
-                    <input type="text" id="searchBar" class="form-control" placeholder="🔍 Cari nama barang..." onkeyup="searchData()">
+            <div class="row g-2 mb-4">
+                <input type="hidden" id="atkId">
+                <div class="col-md-6">
+                    <input type="text" id="atkName" class="form-control" placeholder="Nama Barang">
                 </div>
-
-                <div class="table-responsive">
-                    <table class="table table-hover mt-2">
-                        <thead>
-                            <tr>
-                                <th>Nama Barang</th>
-                                <th>Stok</th>
-                                <th class="text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="atkTableBody">
-                            </tbody>
-                    </table>
+                <div class="col-md-3">
+                    <input type="number" id="atkStock" class="form-control" placeholder="Jumlah">
+                </div>
+                <div class="col-md-3 d-grid">
+                    <button onclick="saveData()" id="btnSave" class="btn btn-primary">Simpan Data</button>
                 </div>
             </div>
-            <p class="text-center text-muted small">Data tersimpan otomatis di browser ini.</p>
+
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nama Barang</th>
+                            <th>Stok</th>
+                            <th class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="atkTableBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -61,21 +64,17 @@
 <script>
     let inventory = JSON.parse(localStorage.getItem('atkData')) || [];
 
-    function renderTable(data = inventory) {
+    function renderTable() {
         const tableBody = document.getElementById('atkTableBody');
         tableBody.innerHTML = '';
-        
-        data.forEach((item, index) => {
-            // Cari index asli jika sedang dalam mode pencarian
-            const originalIndex = inventory.findIndex(i => i === item);
-            
+        inventory.forEach((item, index) => {
             tableBody.innerHTML += `
                 <tr>
-                    <td class="align-middle fw-bold">${item.name}</td>
-                    <td class="align-middle"><span class="badge bg-info text-dark">${item.stock} Unit</span></td>
+                    <td>${item.name}</td>
+                    <td><span class="badge bg-primary">${item.stock}</span></td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-warning me-1" onclick="editData(${originalIndex})">Edit</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteData(${originalIndex})">Hapus</button>
+                        <button class="btn btn-sm btn-warning" onclick="editData(${index})">Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteData(${index})">Hapus</button>
                     </td>
                 </tr>`;
         });
@@ -86,47 +85,57 @@
         const id = document.getElementById('atkId').value;
         const name = document.getElementById('atkName').value;
         const stock = document.getElementById('atkStock').value;
+        if(!name || !stock) return alert("Isi data!");
 
-        if(!name || !stock) return alert("Mohon isi nama dan stok!");
-
-        if(id === "") {
-            inventory.push({ name, stock });
-        } else {
+        if(id === "") inventory.push({ name, stock });
+        else {
             inventory[id] = { name, stock };
             document.getElementById('atkId').value = "";
-            document.getElementById('btnSave').innerText = "Tambah Barang";
-            document.getElementById('btnSave').className = "btn btn-primary";
+            document.getElementById('btnSave').innerText = "Simpan Data";
         }
-
         document.getElementById('atkName').value = "";
         document.getElementById('atkStock').value = "";
         renderTable();
     }
 
-    function searchData() {
-        const keyword = document.getElementById('searchBar').value.toLowerCase();
-        const filtered = inventory.filter(item => item.name.toLowerCase().includes(keyword));
-        renderTable(filtered);
+    // FUNGSI UTAMA: MEMBACA FILE CSV
+    function importCSV() {
+        const fileInput = document.getElementById('csvFile');
+        const file = fileInput.files[0];
+        if (!file) return alert("Pilih file CSV dulu!");
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const rows = text.split('\n');
+            
+            // Mulai dari baris ke-1 (lewati header jika ada)
+            for (let i = 1; i < rows.length; i++) {
+                const columns = rows[i].split(',');
+                if (columns.length >= 2) {
+                    const name = columns[0].trim();
+                    const stock = columns[1].trim();
+                    if (name) inventory.push({ name, stock });
+                }
+            }
+            renderTable();
+            alert("Data berhasil di-import!");
+        };
+        reader.readAsText(file);
     }
 
     function deleteData(index) {
-        if(confirm("Hapus barang ini dari daftar?")) {
-            inventory.splice(index, 1);
-            renderTable();
-        }
+        if(confirm("Hapus?")) { inventory.splice(index, 1); renderTable(); }
     }
 
     function editData(index) {
         document.getElementById('atkId').value = index;
         document.getElementById('atkName').value = inventory[index].name;
         document.getElementById('atkStock').value = inventory[index].stock;
-        document.getElementById('btnSave').innerText = "Simpan Perubahan";
-        document.getElementById('btnSave').className = "btn btn-success";
-        window.scrollTo(0,0);
+        document.getElementById('btnSave').innerText = "Update";
     }
 
     renderTable();
 </script>
-
 </body>
 </html>
