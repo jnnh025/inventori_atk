@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventori ATK - CRUD</title>
+    <style>
+        :root { --primary: #2563eb; --danger: #dc2626; --success: #16a34a; }
+        body { font-family: sans-serif; background: #f4f7fe; margin: 20px; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: var(--primary); }
+        
+        /* Form Styling */
+        .form-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 6px; color: white; transition: 0.3s; }
+        .btn-add { background: var(--primary); }
+        .btn-add:hover { background: #1d4ed8; }
+        
+        /* Table Styling */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8fafc; }
+        .btn-edit { background: #f59e0b; margin-right: 5px; }
+        .btn-delete { background: var(--danger); }
+        .badge { background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📦 Inventori ATK Kantor</h2>
+    
+    <div class="form-group">
+        <input type="hidden" id="atkId">
+        <input type="text" id="atkName" placeholder="Nama Barang (contoh: Pulpen)">
+        <input type="number" id="atkStock" placeholder="Jumlah">
+        <button onclick="saveData()" id="btnSave" class="btn-add">Tambah Barang</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nama Barang</th>
+                <th>Stok</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="atkTableBody">
+            </tbody>
+    </table>
+</div>
+
+<script>
+    let inventory = JSON.parse(localStorage.getItem('atkData')) || [];
+
+    function renderTable() {
+        const tableBody = document.getElementById('atkTableBody');
+        tableBody.innerHTML = '';
+        
+        inventory.forEach((item, index) => {
+            tableBody.innerHTML += `
+                <tr>
+                    <td><strong>${item.name}</strong></td>
+                    <td><span class="badge">${item.stock} unit</span></td>
+                    <td>
+                        <button class="btn-edit" onclick="editData(${index})">Edit</button>
+                        <button class="btn-delete" onclick="deleteData(${index})">Hapus</button>
+                    </td>
+                </tr>
+            `;
+        });
+        localStorage.setItem('atkData', JSON.stringify(inventory));
+    }
+
+    function saveData() {
+        const id = document.getElementById('atkId').value;
+        const name = document.getElementById('atkName').value;
+        const stock = document.getElementById('atkStock').value;
+
+        if(!name || !stock) return alert("Isi semua bidang!");
+
+        if(id === "") {
+            // Create
+            inventory.push({ name, stock });
+        } else {
+            // Update
+            inventory[id] = { name, stock };
+            document.getElementById('atkId').value = "";
+            document.getElementById('btnSave').innerText = "Tambah Barang";
+        }
+
+        document.getElementById('atkName').value = "";
+        document.getElementById('atkStock').value = "";
+        renderTable();
+    }
+
+    function deleteData(index) {
+        if(confirm("Hapus barang ini?")) {
+            inventory.splice(index, 1);
+            renderTable();
+        }
+    }
+
+    function editData(index) {
+        document.getElementById('atkId').value = index;
+        document.getElementById('atkName').value = inventory[index].name;
+        document.getElementById('atkStock').value = inventory[index].stock;
+        document.getElementById('btnSave').innerText = "Update Barang";
+    }
+
+    // Jalankan saat pertama kali buka
+    renderTable();
+</script>
+
+</body>
+</html>
