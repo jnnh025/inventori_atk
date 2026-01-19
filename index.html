@@ -126,21 +126,26 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             const rows = e.target.result.split('\n');
+            
+            // PENTING: Reset list menjadi kosong sebelum isi data baru
+            // agar tidak menumpuk (menjadi 999+)
             atkList = []; 
+
             for (let i = 1; i < rows.length; i++) {
                 const cols = rows[i].split(',');
-                if (cols.length >= 4) {
+                // Hanya masukkan jika baris memiliki nama barang (kolom ke-2)
+                if (cols.length >= 2 && cols[1].trim() !== "") {
                     atkList.push({
                         no: cols[0].trim(),
                         nama: cols[1].trim(),
-                        stok: cols[2].trim(),
-                        satuan: cols[3].trim()
+                        stok: cols[2] ? cols[2].trim() : "0",
+                        satuan: cols[3] ? cols[3].trim() : "-"
                     });
                 }
             }
             document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString('id-ID');
             displayTable();
-            alert("Nomor Urut dan Data Berhasil Diimpor!");
+            alert("Berhasil! Terdeteksi " + atkList.length + " jenis barang.");
         };
         reader.readAsText(file);
     }
