@@ -3,72 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventori ATK - CRUD</title>
+    <title>Inventori ATK Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root { --primary: #2563eb; --danger: #dc2626; --success: #16a34a; }
-        body { font-family: sans-serif; background: #f4f7fe; margin: 20px; color: #333; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: var(--primary); }
-        
-        /* Form Styling */
-        .form-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
-        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 6px; color: white; transition: 0.3s; }
-        .btn-add { background: var(--primary); }
-        .btn-add:hover { background: #1d4ed8; }
-        
-        /* Table Styling */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #f8fafc; }
-        .btn-edit { background: #f59e0b; margin-right: 5px; }
-        .btn-delete { background: var(--danger); }
-        .badge { background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; }
+        body { background-color: #f8f9fa; }
+        .card { border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .btn-primary { background-color: #4e73df; border: none; }
+        .table thead { background-color: #4e73df; color: white; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>📦 Inventori ATK Kantor</h2>
-    
-    <div class="form-group">
-        <input type="hidden" id="atkId">
-        <input type="text" id="atkName" placeholder="Nama Barang (contoh: Pulpen)">
-        <input type="number" id="atkStock" placeholder="Jumlah">
-        <button onclick="saveData()" id="btnSave" class="btn-add">Tambah Barang</button>
-    </div>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card p-4 mb-4">
+                <h2 class="text-center mb-4 text-primary">📦 Manajemen Inventori ATK</h2>
+                
+                <div class="row g-2 mb-4">
+                    <input type="hidden" id="atkId">
+                    <div class="col-md-5">
+                        <input type="text" id="atkName" class="form-control" placeholder="Nama Barang (misal: Kertas A4)">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="number" id="atkStock" class="form-control" placeholder="Stok">
+                    </div>
+                    <div class="col-md-4 d-grid">
+                        <button onclick="saveData()" id="btnSave" class="btn btn-primary">Tambah Barang</button>
+                    </div>
+                </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Nama Barang</th>
-                <th>Stok</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody id="atkTableBody">
-            </tbody>
-    </table>
+                <hr>
+
+                <div class="mb-3">
+                    <input type="text" id="searchBar" class="form-control" placeholder="🔍 Cari nama barang..." onkeyup="searchData()">
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover mt-2">
+                        <thead>
+                            <tr>
+                                <th>Nama Barang</th>
+                                <th>Stok</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="atkTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+            <p class="text-center text-muted small">Data tersimpan otomatis di browser ini.</p>
+        </div>
+    </div>
 </div>
 
 <script>
     let inventory = JSON.parse(localStorage.getItem('atkData')) || [];
 
-    function renderTable() {
+    function renderTable(data = inventory) {
         const tableBody = document.getElementById('atkTableBody');
         tableBody.innerHTML = '';
         
-        inventory.forEach((item, index) => {
+        data.forEach((item, index) => {
+            // Cari index asli jika sedang dalam mode pencarian
+            const originalIndex = inventory.findIndex(i => i === item);
+            
             tableBody.innerHTML += `
                 <tr>
-                    <td><strong>${item.name}</strong></td>
-                    <td><span class="badge">${item.stock} unit</span></td>
-                    <td>
-                        <button class="btn-edit" onclick="editData(${index})">Edit</button>
-                        <button class="btn-delete" onclick="deleteData(${index})">Hapus</button>
+                    <td class="align-middle fw-bold">${item.name}</td>
+                    <td class="align-middle"><span class="badge bg-info text-dark">${item.stock} Unit</span></td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-warning me-1" onclick="editData(${originalIndex})">Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteData(${originalIndex})">Hapus</button>
                     </td>
-                </tr>
-            `;
+                </tr>`;
         });
         localStorage.setItem('atkData', JSON.stringify(inventory));
     }
@@ -78,16 +87,15 @@
         const name = document.getElementById('atkName').value;
         const stock = document.getElementById('atkStock').value;
 
-        if(!name || !stock) return alert("Isi semua bidang!");
+        if(!name || !stock) return alert("Mohon isi nama dan stok!");
 
         if(id === "") {
-            // Create
             inventory.push({ name, stock });
         } else {
-            // Update
             inventory[id] = { name, stock };
             document.getElementById('atkId').value = "";
             document.getElementById('btnSave').innerText = "Tambah Barang";
+            document.getElementById('btnSave').className = "btn btn-primary";
         }
 
         document.getElementById('atkName').value = "";
@@ -95,8 +103,14 @@
         renderTable();
     }
 
+    function searchData() {
+        const keyword = document.getElementById('searchBar').value.toLowerCase();
+        const filtered = inventory.filter(item => item.name.toLowerCase().includes(keyword));
+        renderTable(filtered);
+    }
+
     function deleteData(index) {
-        if(confirm("Hapus barang ini?")) {
+        if(confirm("Hapus barang ini dari daftar?")) {
             inventory.splice(index, 1);
             renderTable();
         }
@@ -106,10 +120,11 @@
         document.getElementById('atkId').value = index;
         document.getElementById('atkName').value = inventory[index].name;
         document.getElementById('atkStock').value = inventory[index].stock;
-        document.getElementById('btnSave').innerText = "Update Barang";
+        document.getElementById('btnSave').innerText = "Simpan Perubahan";
+        document.getElementById('btnSave').className = "btn btn-success";
+        window.scrollTo(0,0);
     }
 
-    // Jalankan saat pertama kali buka
     renderTable();
 </script>
 
