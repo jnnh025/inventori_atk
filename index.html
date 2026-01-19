@@ -85,7 +85,7 @@
 </div>
 
 <script>
-    let atkList = JSON.parse(localStorage.getItem('atkDataSelong')) || [];
+   let atkList = JSON.parse(localStorage.getItem('atkDataSelong')) || [];
 
     function updateStats() {
         document.getElementById('totalItems').innerText = atkList.length;
@@ -99,7 +99,7 @@
         data.forEach((item, index) => {
             tableBody.innerHTML += `
                 <tr>
-                    <td>${item.no}</td>
+                    <td>${index + 1}</td>
                     <td class="fw-bold">${item.nama}</td>
                     <td><span class="badge ${item.stok < 10 ? 'bg-danger' : 'bg-primary'}">${item.stok}</span></td>
                     <td class="text-secondary small">${item.satuan}</td>
@@ -120,30 +120,40 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             const rows = e.target.result.split('\n');
-            atkList = []; // Reset data lama
+            let countAdded = 0;
+            let countDuplicate = 0;
+
             for (let i = 1; i < rows.length; i++) {
                 const cols = rows[i].split(',');
-                if (cols.length >= 3 && cols[1].trim() !== "") {
-                    atkList.push({
-                        no: cols[0].trim(),
-                        nama: cols[1].trim(),
-                        stok: cols[2].trim(),
-                        satuan: cols[3] ? cols[3].trim() : '-'
-                    });
+                if (cols.length >= 2 && cols[1].trim() !== "") {
+                    const namaBaru = cols[1].trim().toUpperCase();
+                    
+                    // PROSES PENGECEKAN DUPLIKAT
+                    const sudahAda = atkList.some(item => item.nama.toUpperCase() === namaBaru);
+
+                    if (!sudahAda) {
+                        atkList.push({
+                            no: atkList.length + 1,
+                            nama: namaBaru,
+                            stok: cols[2] ? cols[2].trim() : "0",
+                            satuan: cols[3] ? cols[3].trim() : '-'
+                        });
+                        countAdded++;
+                    } else {
+                        countDuplicate++;
+                    }
                 }
             }
-            document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString('id-ID');
             displayTable();
-            alert("Berhasil mengimpor " + atkList.length + " barang.");
+            alert("Selesai! " + countAdded + " data baru ditambah. " + countDuplicate + " data duplikat dilewati.");
         };
         reader.readAsText(file);
     }
 
     function clearAllData() {
-        if(confirm("Apakah Anda yakin ingin menghapus SEMUA data di dashboard?")) {
+        if(confirm("Hapus semua data di dashboard?")) {
             atkList = [];
             displayTable();
-            document.getElementById('lastUpdate').innerText = "-";
         }
     }
 
