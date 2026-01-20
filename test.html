@@ -3,79 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gudang ATK</title>
+    <title>Inventori ATK - Smart Warehouse</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { background-color: #fdfbfb; font-family: 'Quicksand', sans-serif; }
-        .bg-pastel-blue { background-color: #d4eaf7; color: #4a90e2; border-radius: 20px; }
-        .bg-pastel-green { background-color: #e2f0cb; color: #7cb342; border-radius: 20px; }
-        .glass-card { background: white; border-radius: 25px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); border: 1px solid #f1f1f1; }
+        body { background-color: #fdfbfb; font-family: 'Quicksand', sans-serif; color: #5d6d7e; }
+        .navbar { background: #ffffff; border-bottom: 2px solid #f0f3f4; }
+        .navbar-brand { font-weight: 700; color: #ffb7b2 !important; font-size: 1.5rem; }
+        .stat-card { border: none; border-radius: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.02); }
+        .bg-pastel-blue { background-color: #d4eaf7; color: #4a90e2; }
+        .bg-pastel-green { background-color: #e2f0cb; color: #7cb342; }
+        .bg-pastel-purple { background-color: #efdbff; color: #9b59b6; }
+        .glass-card { background: white; border-radius: 30px; padding: 30px; border: 1px solid #f1f1f1; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+        .btn-pastel { background-color: #ffb7b2; color: white; border-radius: 15px; font-weight: 700; border: none; padding: 12px 25px; }
+        .btn-pastel:hover { background-color: #ff9aa2; color: white; }
+        
         /* Style Tombol Tambah Kurang */
-        .btn-qty { 
-            width: 35px; height: 35px; border-radius: 10px; border: none; 
-            font-weight: bold; font-size: 1.2rem; transition: 0.2s;
-            display: inline-flex; align-items: center; justify-content: center;
-        }
-        .btn-minus { background-color: #ffdad9; color: #e57373; }
-        .btn-plus { background-color: #dcfce7; color: #15803d; }
-        .btn-qty:hover { transform: scale(1.1); opacity: 0.8; }
-        .stok-display { min-width: 50px; font-size: 1.1rem; font-weight: 700; color: #2c3e50; }
-        .low-stock { color: #e57373 !important; }
+        .qty-btn { width: 32px; height: 32px; border-radius: 10px; border: none; font-weight: bold; transition: 0.2s; }
+        .qty-btn-plus { background-color: #dcfce7; color: #15803d; }
+        .qty-btn-minus { background-color: #fee2e2; color: #991b1b; }
+        .qty-btn:hover { opacity: 0.7; transform: scale(1.1); }
+        .stok-value { min-width: 45px; display: inline-block; font-weight: bold; text-align: center; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-light bg-white border-bottom py-3">
+<nav class="navbar py-3 mb-4">
     <div class="container">
-        <span class="navbar-brand fw-bold text-secondary"><i class="bi bi-box-seam-fill me-2 text-info"></i>GUDANG SELONG</span>
-        <button onclick="clearAllData()" class="btn btn-outline-danger btn-sm rounded-pill fw-bold">Reset Dashboard</button>
+        <span class="navbar-brand"><i class="bi bi-box-fill me-2"></i>ATK KC SELONG</span>
+        <button onclick="clearAllData()" class="btn btn-outline-secondary btn-sm border-0 fw-bold rounded-pill">
+            <i class="bi bi-eraser-fill me-1"></i> Bersihkan Semua
+        </button>
     </div>
 </nav>
 
-<div class="container py-4">
-    <div class="row g-3 mb-4">
-        <div class="col-6">
-            <div class="p-4 bg-pastel-blue shadow-sm">
-                <small class="fw-bold opacity-75">JENIS BARANG</small>
+<div class="container pb-5">
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card stat-card p-4 bg-pastel-blue h-100 border-0">
+                <p class="mb-1 fw-bold opacity-75 text-uppercase small">Item Terdata</p>
                 <h2 class="fw-bold mb-0" id="totalItems">0</h2>
             </div>
         </div>
-        <div class="col-6">
-            <div class="p-4 bg-pastel-green shadow-sm">
-                <small class="fw-bold opacity-75">TOTAL STOK UNIT</small>
+        <div class="col-md-4">
+            <div class="card stat-card p-4 bg-pastel-green h-100 border-0">
+                <p class="mb-1 fw-bold opacity-75 text-uppercase small">Total Stok</p>
                 <h2 class="fw-bold mb-0" id="totalStock">0</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card p-4 bg-pastel-purple h-100 border-0">
+                <p class="mb-1 fw-bold opacity-75 text-uppercase small">Update Jam</p>
+                <h2 class="fw-bold mb-0" id="lastUpdate" style="font-size: 1.5rem;">-</h2>
             </div>
         </div>
     </div>
 
-    <div class="glass-card mb-4 text-center">
-        <h6 class="fw-bold mb-3">Upload File CSV Gudang</h6>
-        <div class="d-flex gap-2 justify-content-center">
-            <input type="file" id="csvFileInput" class="form-control w-50" accept=".csv">
-            <button onclick="importData()" class="btn btn-info text-white fw-bold px-4 rounded-pill">Update</button>
+    <div class="glass-card mb-5">
+        <h5 class="fw-bold mb-4 text-center">💖 Import Data Master</h5>
+        <div class="row g-3 justify-content-center">
+            <div class="col-md-7">
+                <input type="file" id="csvFileInput" class="form-control" accept=".csv">
+            </div>
+            <div class="col-md-3">
+                <button onclick="importData()" class="btn btn-pastel w-100 shadow-sm">Update Data</button>
+            </div>
         </div>
     </div>
 
     <div class="glass-card">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h5 class="fw-bold mb-0">Kelola Stok ATK</h5>
-            <input type="text" id="searchBox" class="form-control w-25 rounded-pill" placeholder="Cari..." onkeyup="searchBarang()">
+            <h5 class="fw-bold mb-0">Kelola Stok Barang</h5>
+            <input type="text" id="searchBox" class="form-control w-25" placeholder="Cari barang..." onkeyup="searchBarang()">
         </div>
-        
-        <table class="table align-middle">
-            <thead>
-                <tr class="text-muted small">
-                    <th>NO</th>
-                    <th>NAMA BARANG</th>
-                    <th class="text-center">KONTROL STOK</th>
-                    <th>SATUAN</th>
-                    <th class="text-end">OPSI</th>
-                </tr>
-            </thead>
-            <tbody id="inventoryTable"></tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th width="60px">NO</th>
+                        <th>NAMA BARANG</th>
+                        <th class="text-center" width="200px">KONTROL STOK</th>
+                        <th>SATUAN</th>
+                        <th class="text-end">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryTable"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -89,46 +105,46 @@
         localStorage.setItem('atkDataSelong', JSON.stringify(atkList));
     }
 
-    // FUNGSI UTAMA TAMBAH KURANG
-    function gantiQty(index, jumlah) {
-        let stokSekarang = parseInt(atkList[index].stok) || 0;
-        let stokBaru = stokSekarang + jumlah;
-        if (stokBaru < 0) stokBaru = 0;
-        atkList[index].stok = stokBaru.toString();
+    // Fungsi Tambah/Kurang
+    function changeQty(index, delta) {
+        let currentQty = parseInt(atkList[index].stok) || 0;
+        let newQty = currentQty + delta;
+        if (newQty < 0) newQty = 0;
+        atkList[index].stok = newQty.toString();
         displayTable();
     }
 
-    function displayTable(data = atkList) {
-        const tableBody = document.getElementById('inventoryTable');
-        tableBody.innerHTML = '';
+ function displayTable(data = atkList) {
+    const tableBody = document.getElementById('inventoryTable');
+    tableBody.innerHTML = '';
+    data.forEach((item, index) => {
+        const originalIndex = atkList.findIndex(x => x.nama === item.nama);
+        const isLow = parseInt(item.stok) < 10;
         
-        data.forEach((item, index) => {
-            const originalIndex = atkList.findIndex(x => x.nama === item.nama);
-            const isLow = parseInt(item.stok) < 10;
-            
-            tableBody.innerHTML += `
-                <tr>
-                    <td class="text-muted fw-bold">${index + 1}</td>
-                    <td class="fw-bold">${item.nama}</td>
-                    <td class="text-center">
-                        <div class="d-flex align-items-center justify-content-center gap-3">
-                            <button onclick="gantiQty(${originalIndex}, -1)" class="btn-qty btn-minus">-</button>
-                            <span class="stok-display ${isLow ? 'low-stock' : ''}">${item.stok}</span>
-                            <button onclick="gantiQty(${originalIndex}, 1)" class="btn-qty btn-plus">+</button>
-                        </div>
-                    </td>
-                    <td class="text-muted small">${item.satuan}</td>
-                    <td class="text-end">
-                        <button onclick="hapusItem(${originalIndex})" class="btn btn-sm text-danger"><i class="bi bi-trash3"></i></button>
-                    </td>
-                </tr>`;
-        });
-        updateStats();
-    }
+        tableBody.innerHTML += `
+            <tr>
+                <td class="text-muted fw-bold">${index + 1}</td>
+                <td class="fw-bold">${item.nama}</td>
+                <td class="text-center">
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                        <button onclick="changeQty(${originalIndex}, -1)" class="qty-btn qty-btn-minus">-</button>
+                        <span class="stok-value ${isLow ? 'text-danger' : ''}">${item.stok}</span>
+                        <button onclick="changeQty(${originalIndex}, 1)" class="qty-btn qty-btn-plus">+</button>
+                    </div>
+                </td>
+                <td class="text-muted small">${item.satuan}</td>
+                <td class="text-end">
+                    <button onclick="removeItem(${originalIndex})" class="btn btn-link text-danger p-0"><i class="bi bi-trash3"></i></button>
+                </td>
+            </tr>`;
+    });
+    updateStats();
+}   
+
 
     function importData() {
         const file = document.getElementById('csvFileInput').files[0];
-        if (!file) return alert("Pilih file dulu!");
+        if (!file) return alert("Pilih file CSV!");
         const reader = new FileReader();
         reader.onload = function(e) {
             const rows = e.target.result.split(/\r?\n/);
@@ -142,17 +158,31 @@
                     }
                 }
             }
+            document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString('id-ID');
             displayTable();
         };
         reader.readAsText(file);
     }
 
-    function clearAllData() { if(confirm("Reset semua?")) { atkList = []; displayTable(); } }
+    function clearAllData() {
+        if(confirm("Hapus semua data?")) {
+            atkList = [];
+            displayTable();
+            document.getElementById('lastUpdate').innerText = "-";
+        }
+    }
+
     function searchBarang() {
         const key = document.getElementById('searchBox').value.toLowerCase();
         displayTable(atkList.filter(i => i.nama.toLowerCase().includes(key)));
     }
-    function hapusItem(index) { atkList.splice(index, 1); displayTable(); }
+
+    function removeItem(index) {
+        if(confirm("Hapus barang?")) {
+            atkList.splice(index, 1);
+            displayTable();
+        }
+    }
 
     displayTable();
 </script>
